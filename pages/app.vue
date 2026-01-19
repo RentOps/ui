@@ -117,6 +117,13 @@ function removeWhitelistAccount(index: number) {
 }
 
 async function reclaimRent(reclaim: any) {
+  // Extra safety check for User Owned accounts
+  if (reclaim.reason === 'USER_OWNED') {
+    if (!window.confirm("WARNING: You are attempting to close a User-Owned account.\n\nOnly the actual owner's private key can authorize this. The Kora Node key will fail.\n\nDo you hold the User's Private Key?")) {
+      return
+    }
+  }
+
   const privateKey = prompt(
     'Enter your authority private key (base58 or JSON array):\n\n' +
     '  Your key is ONLY used for this transaction and NOT stored.\n' +
@@ -925,7 +932,7 @@ async function checkHealth() {
           <button 
             v-if="selectedReclaim.currentStatus === 'active'"
             @click="reclaimRent(selectedReclaim)"
-            :disabled="isReclaiming || (selectedReclaim.reason === 'USER_OWNED' && !confirm('You are attempting to close a User-Owned account. Do you hold the User\'s Private Key?'))"
+            :disabled="isReclaiming"
             :class="[
               'block w-full py-4 font-bold uppercase tracking-widest transition-colors text-center disabled:opacity-50 disabled:cursor-not-allowed',
               selectedReclaim.reason === 'USER_OWNED' 
