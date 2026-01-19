@@ -870,11 +870,21 @@ async function checkHealth() {
         </div>
 
         <div class="space-y-6 flex-1 overflow-y-auto">
+          <!-- Ownership Warning -->
+          <div v-if="selectedReclaim.reason === 'USER_OWNED'" class="bg-blue-900/20 border-l-2 border-blue-500 p-4">
+             <p class="text-xs text-blue-400 font-bold uppercase mb-1">Sponsored Asset</p>
+             <p class="text-[10px] text-gray-400 leading-relaxed">
+               This account is owned by a user {{ selectedReclaim.currentOwner ? '(' + selectedReclaim.currentOwner.slice(0,8) + '...)' : '' }}. 
+               The Kora node paid the rent, but does not have authority to close it. 
+               Reclamation is only possible if you hold the user's private key.
+             </p>
+          </div>
+
           <div class="bg-black border border-gray-800 p-4">
             <p class="text-[10px] uppercase text-gray-500 mb-1">Status</p>
             <div class="flex items-center gap-2 text-white font-bold">
               <component :is="selectedReclaim.type === 'success' ? CheckmarkCircle02Icon : Alert02Icon" size="20" :class="selectedReclaim.type === 'success' ? 'text-[#cc5500]' : 'text-orange-500'" />
-              {{ selectedReclaim.type === 'detected' ? 'RENT_DETECTED' : selectedReclaim.type.toUpperCase() }}
+              {{ selectedReclaim.reason === 'RECLAIMABLE' ? 'ACTION_REQ' : (selectedReclaim.reason === 'USER_OWNED' ? 'SPONSORED' : selectedReclaim.type.toUpperCase()) }}
             </div>
           </div>
 
@@ -915,16 +925,6 @@ async function checkHealth() {
           <div>
             <p class="text-[10px] uppercase text-gray-500 mb-1">Reasoning</p>
             <p class="text-sm text-gray-300 border-l-2 border-gray-700 pl-3 py-1">{{ selectedReclaim.reason }}</p>
-          </div>
-
-          <!-- Ownership Warning -->
-          <div v-if="selectedReclaim.reason === 'USER_OWNED'" class="bg-blue-900/20 border-l-2 border-blue-500 p-4">
-             <p class="text-xs text-blue-400 font-bold uppercase mb-1">Sponsored Asset</p>
-             <p class="text-[10px] text-gray-400 leading-relaxed">
-               This account is owned by a user {{ selectedReclaim.currentOwner ? '(' + selectedReclaim.currentOwner.slice(0,8) + '...)' : '' }}. 
-               The Kora node paid the rent, but does not have authority to close it. 
-               Reclamation is only possible if you hold the user's private key.
-             </p>
           </div>
         </div>
 
