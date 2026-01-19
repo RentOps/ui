@@ -150,9 +150,14 @@ export default defineEventHandler(async (event) => {
 
     // 7. Send transaction
     const encodedTx = getBase64EncodedWireTransaction(signedMessage)
+    
+    console.log(`[RECLAIM] Sending transaction (Base64)...`)
+
     const signature = await rpc.sendTransaction(encodedTx, {
       encoding: 'base64',
-      skipPreflight: false
+      skipPreflight: true,
+      preflightCommitment: 'confirmed',
+      maxRetries: 0
     }).send()
 
       console.log(`[RECLAIM] Success! TX: ${signature}`)
