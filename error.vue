@@ -49,19 +49,12 @@ const handleError = () => clearError({ redirect: '/' })
   </div>
 </template>
 
-<style>
+<style scoped>
 /* Ensure font is available since layout might not load */
 @font-face {
   font-family: 'Oswald';
   src: url('/Oswald/Oswald-VariableFont_wght.ttf') format('truetype');
   font-weight: 200 700;
   font-display: swap;
-}
-
-body {
-  margin: 0;
-  background-color: #000000;
-  font-family: 'Oswald', sans-serif;
-  overflow: hidden;
 }
 </style>
