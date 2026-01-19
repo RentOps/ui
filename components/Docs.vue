@@ -33,14 +33,14 @@ const activeDoc = ref('Getting Started')
 </script>
 
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-0 border border-gray-900 bg-[#050505] min-h-[600px]">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-0 border border-gray-900 bg-[#050505] lg:h-[800px]">
     <!-- Sidebar -->
-    <div class="border-b lg:border-b-0 lg:border-r border-gray-900 bg-[#0a0a0a]">
-      <div class="p-6 border-b border-gray-900">
+    <div class="border-b lg:border-b-0 lg:border-r border-gray-900 bg-[#0a0a0a] flex flex-col max-h-[300px] lg:max-h-full">
+      <div class="p-6 border-b border-gray-900 flex-shrink-0">
         <h3 class="text-sm font-bold uppercase tracking-[0.2em] text-[#cc5500]">Documentation</h3>
       </div>
       
-      <div class="overflow-y-auto max-h-[600px] custom-scrollbar">
+      <div class="overflow-y-auto custom-scrollbar flex-1">
         <div v-for="category in categories" :key="category.title" class="mb-0">
           <div class="px-6 py-4 bg-black/50 border-b border-gray-900">
             <h4 class="text-xs font-bold uppercase text-gray-500 flex items-center gap-2">
@@ -66,7 +66,7 @@ const activeDoc = ref('Getting Started')
     </div>
 
     <!-- Content Area -->
-    <div class="lg:col-span-3 p-8 lg:p-12 overflow-y-auto max-h-[800px] custom-scrollbar bg-[#050505]">
+    <div class="lg:col-span-3 p-8 lg:p-12 overflow-y-auto custom-scrollbar bg-[#050505] min-h-[500px] lg:h-full">
       <div class="max-w-3xl">
         <div class="mb-8 pb-4 border-b border-gray-800">
           <span class="text-[#cc5500] text-xs font-bold uppercase tracking-widest mb-2 block">/ Docs / {{ activeDoc }}</span>
