@@ -50,7 +50,7 @@ const chartConfig = {
 </script>
 
 <template>
-  <Card class="flex flex-col border-gray-800 bg-[#050505] overflow-hidden">
+  <Card class="flex flex-col border-0 bg-transparent overflow-hidden shadow-none">
     <CardHeader class="items-center pb-0">
       <CardTitle class="text-white">Detection Profile</CardTitle>
       <CardDescription class="text-gray-400">Distribution by reason type</CardDescription>

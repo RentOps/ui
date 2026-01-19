@@ -56,7 +56,7 @@ const chartConfig = {
 </script>
 
 <template>
-  <Card class="border-gray-800 bg-[#050505] overflow-hidden">
+  <Card class="border-0 bg-transparent overflow-hidden shadow-none">
     <CardHeader>
       <CardTitle class="text-white">Top Nodes</CardTitle>
       <CardDescription class="text-gray-400">Distribution by SOL volume</CardDescription>

@@ -72,8 +72,8 @@ const totalSol = computed(() => chartData.value.reduce((acc, curr) => acc + curr
 </script>
 
 <template>
-  <Card class="py-4 sm:py-0 border-gray-800 bg-[#050505]">
-    <CardHeader class="flex flex-col items-stretch border-b border-gray-800 !p-0 sm:flex-row">
+  <Card class="py-4 sm:py-0 border-0 bg-transparent shadow-none">
+    <CardHeader class="flex flex-col items-stretch border-b border-gray-900 !p-0 sm:flex-row">
       <div class="flex flex-1 flex-col justify-center gap-1 px-6 py-5 sm:py-6">
         <CardTitle class="text-white">Recent Activity</CardTitle>
         <CardDescription class="text-gray-400">

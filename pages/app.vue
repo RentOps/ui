@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import NumberTicker from '../components/NumberTicker.vue'
 import Analytics from '../components/Analytics.vue'
+import Docs from '../components/Docs.vue'
 import BarChartInteractive from '../components/charts/BarChartInteractive.vue'
 import {
   DashboardSquare01Icon,
@@ -24,14 +25,24 @@ import {
   SecurityIcon,
   Copy01Icon,
   Link01Icon,
-  AnalysisTextLinkIcon
+  AnalysisTextLinkIcon,
+  Delete01Icon,
+  Home03Icon,
+  BookOpen01Icon
 } from 'hugeicons-vue'
 
 const { data: stats, refresh } = await useFetch('/api/stats')
 const selectedReclaim = ref<any>(null)
 const showScanModal = ref(false)
+const showClearModal = ref(false)
+const showMobileMenu = ref(false)
 const scanNodes = ref<{ address: string, nickname: string, isEditing: boolean }[]>([])
 const scanNetwork = ref({ type: 'mainnet', customUrl: '' })
+
+function clearSession() {
+  localStorage.clear()
+  window.location.reload()
+}
 
 // Load from localStorage or use default
 onMounted(() => {
@@ -344,7 +355,7 @@ async function checkHealth() {
               currentTab === 'home' ? 'bg-[#cc5500] text-black border-black' : 'text-gray-500 hover:text-white'
             ]"
           >
-            <Home01Icon size="16" /> Home
+            <Home03Icon size="16" /> Home
           </button>
           <div class="w-px bg-gray-800 my-1 mx-1"></div>
           <button 
@@ -354,7 +365,17 @@ async function checkHealth() {
               currentTab === 'analytics' ? 'bg-[#cc5500] text-black border-black' : 'text-gray-500 hover:text-white'
             ]"
           >
-            <ChartAverageIcon size="16" /> Analytics
+            <AnalysisTextLinkIcon size="16" /> Analytics
+          </button>
+          <div class="w-px bg-gray-800 my-1 mx-1"></div>
+          <button 
+            @click="currentTab = 'docs'"
+            :class="[
+              'px-6 py-2 text-xs font-bold uppercase tracking-widest transition-colors border border-transparent flex items-center gap-2',
+              currentTab === 'docs' ? 'bg-[#cc5500] text-black border-black' : 'text-gray-500 hover:text-white'
+            ]"
+          >
+            <BookOpen01Icon size="16" /> Docs
           </button>
          </div>
       </div>
@@ -362,7 +383,7 @@ async function checkHealth() {
       <!-- Mobile Menu Trigger -->
       <div class="md:hidden">
         <button @click="showMobileMenu = !showMobileMenu" class="p-2 text-gray-400 hover:text-[#cc5500]">
-          <MoreHorizontalCircle01Icon size="32" />
+          <Menu01Icon size="32" />
         </button>
       </div>
       
@@ -382,7 +403,7 @@ async function checkHealth() {
             class="group p-2 border border-gray-800 hover:border-red-500 hover:bg-red-500/10 transition-colors"
             title="Reset Session"
           >
-            <PowerIcon size="20" class="text-gray-600 group-hover:text-red-500 transition-colors" />
+            <Logout03Icon size="20" class="text-gray-600 group-hover:text-red-500 transition-colors" />
           </button>
         </div>
       </div>
@@ -398,10 +419,13 @@ async function checkHealth() {
         
         <nav class="flex flex-col gap-4">
           <button @click="currentTab = 'home'; showMobileMenu = false" class="flex items-center gap-4 text-left py-6 px-4 border border-gray-900 font-bold uppercase tracking-widest hover:bg-[#cc5500] hover:text-black transition-colors">
-            <Home01Icon /> Home
+            <Home03Icon /> Home
           </button>
           <button @click="currentTab = 'analytics'; showMobileMenu = false" class="flex items-center gap-4 text-left py-6 px-4 border border-gray-900 font-bold uppercase tracking-widest hover:bg-[#cc5500] hover:text-black transition-colors">
-            <ChartAverageIcon /> Analytics
+            <AnalysisTextLinkIcon /> Analytics
+          </button>
+          <button @click="currentTab = 'docs'; showMobileMenu = false" class="flex items-center gap-4 text-left py-6 px-4 border border-gray-900 font-bold uppercase tracking-widest hover:bg-[#cc5500] hover:text-black transition-colors">
+            <BookOpen01Icon /> Docs
           </button>
           <div class="grid grid-cols-2 gap-4 mt-4">
             <button @click="showScanModal = true; showMobileMenu = false" class="flex flex-col items-center gap-2 justify-center py-6 border border-gray-900 text-xs font-bold uppercase tracking-widest hover:border-[#cc5500] hover:text-[#cc5500]">
@@ -412,7 +436,7 @@ async function checkHealth() {
             </button>
           </div>
           <button @click="showClearModal = true; showMobileMenu = false" class="mt-8 flex items-center justify-center gap-4 py-6 border border-red-900/50 text-red-500 font-bold uppercase tracking-widest hover:bg-red-500 hover:text-black transition-colors">
-            <PowerIcon /> Reset Session
+            <Logout03Icon /> Reset Session
           </button>
         </nav>
       </div>
@@ -430,17 +454,26 @@ async function checkHealth() {
             { label: 'Idle Rent Value', value: (stats?.idleRent || 0) * solPrice, icon: Coins01Icon, color: 'text-[#cc5500]', precision: 2, prefix: '$' }
           ]" 
           :key="index"
-          class="p-6 group hover:bg-[#111] transition-colors border-b md:border-b-0 md:border-r border-gray-900 last:border-r-0 lg:border-b-0"
+          class="relative overflow-hidden p-6 group hover:bg-[#111] transition-colors border-b md:border-b-0 md:border-r border-gray-900 last:border-r-0 lg:border-b-0"
           @mouseenter="statHoverKeys[index]++"
         >
-          <div class="flex justify-between items-start mb-4">
-            <component :is="stat.icon" size="24" :class="stat.color" />
-            <span class="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Live .SYS</span>
-          </div>
-          <p class="text-gray-500 text-xs uppercase tracking-[0.2em] mb-1">{{ stat.label }}</p>
-          <div class="flex items-baseline gap-1">
-            <span v-if="stat.prefix" class="text-gray-500 text-xl font-light">{{ stat.prefix }}</span>
-            <NumberTicker :value="stat.value" :precision="stat.precision" />
+          <!-- Background Icon -->
+          <component 
+            :is="stat.icon" 
+            class="absolute -bottom-6 -right-6 text-white/5 group-hover:text-[#cc5500]/10 transition-all duration-500 ease-out group-hover:scale-110 group-hover:-rotate-12 pointer-events-none"
+            :size="140"
+          />
+
+          <div class="relative z-10">
+            <div class="flex justify-between items-start mb-4">
+              <component :is="stat.icon" size="24" :class="stat.color" />
+              <span class="text-[10px] font-bold text-gray-600 uppercase tracking-widest">Live .SYS</span>
+            </div>
+            <p class="text-gray-500 text-xs uppercase tracking-[0.2em] mb-1">{{ stat.label }}</p>
+            <div class="flex items-baseline gap-1">
+              <span v-if="stat.prefix" class="text-gray-500 text-xl font-light">{{ stat.prefix }}</span>
+              <NumberTicker :value="stat.value" :precision="stat.precision" />
+            </div>
           </div>
         </div>
       </div>
@@ -567,28 +600,31 @@ async function checkHealth() {
            </div>
 
            <!-- Row 2: Command Center -->
-            <div class="p-6 h-full">
-               <h3 class="text-xs font-bold uppercase tracking-[0.2em] mb-6 text-gray-400 border-b border-gray-800 pb-2">Command Center</h3>
+            <div class="h-full flex flex-col">
+               <h3 class="text-xs font-bold uppercase tracking-[0.2em] py-4 px-6 text-gray-400 border-b border-gray-900 bg-[#050505]">Command Center</h3>
                
-               <div class="flex flex-col gap-4">
-                  <div class="flex gap-2">
+               <div class="flex flex-col flex-grow">
+                  <!-- Action Buttons Row -->
+                  <div class="flex border-b border-gray-900">
                     <button 
                       @click="showScanModal = true"
-                      class="flex-1 py-4 bg-[#cc5500] text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white transition-colors"
+                      class="flex-1 py-6 bg-[#cc5500] text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white transition-colors"
                     >
                       <Search01Icon size="16" /> Initialize Scan
                     </button>
+                    <div class="w-px bg-gray-900"></div>
                     <button 
                       @click="openWhitelistModal"
-                      class="flex-1 py-4 border border-gray-800 text-gray-400 font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:border-[#cc5500] hover:text-[#cc5500] transition-colors"
+                      class="flex-1 py-6 bg-[#050505] text-gray-400 font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:text-white hover:bg-[#111] transition-colors"
                     >
                       <SecurityIcon size="16" /> Whitelist
                     </button>
                   </div>
 
-                  <div class="bg-black border border-gray-800 p-2 flex justify-between items-center">
+                  <!-- Filter Row -->
+                  <div class="bg-[#050505] p-4 flex justify-between items-center flex-grow">
                      <span class="text-[10px] text-gray-500 uppercase font-bold px-2">Log Filter</span>
-                     <div class="flex bg-[#111] p-1 gap-1">
+                     <div class="flex bg-[#111] border border-gray-900 p-1 gap-1">
                         <button 
                           v-for="filter in ['all', 'detected', 'success']" 
                           :key="filter"
@@ -609,7 +645,10 @@ async function checkHealth() {
     </div>
     
     <!-- Analytics Tab -->
-    <Analytics v-else :logs="logs" :scan-nodes="scanNodes" />
+    <Analytics v-else-if="currentTab === 'analytics'" :logs="logs" :scan-nodes="scanNodes" />
+    
+    <!-- Docs Tab -->
+    <Docs v-else-if="currentTab === 'docs'" />
 
     <!-- SCAN MODAL -->
     <div v-if="showScanModal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4" @click.self="showScanModal = false">
