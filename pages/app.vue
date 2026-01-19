@@ -339,7 +339,7 @@ async function checkHealth() {
     <header class="flex justify-between items-center mb-12 border-b border-gray-900 pb-6 relative">
       <div class="flex items-center gap-4 w-1/3">
         <div class="bg-[#cc5500] p-3 text-black">
-          <DashboardSquare01Icon size="32" stroke-width="2" />
+          <img src="/logo.png" class="w-8 h-8 object-contain" alt="RentOps Logo" />
         </div>
         <div class="hidden sm:block">
           <h2 class="text-[#cc5500] text-sm font-bold uppercase tracking-[0.2em] mb-1">Operator Dashboard</h2>
