@@ -2,6 +2,8 @@
 import NumberTicker from '../components/NumberTicker.vue'
 import Analytics from '../components/Analytics.vue'
 import Docs from '../components/Docs.vue'
+import AlertModal from '../components/ui/AlertModal.vue'
+import ReclaimModal from '../components/ui/ReclaimModal.vue'
 import BarChartInteractive from '../components/charts/BarChartInteractive.vue'
 import {
   DashboardSquare01Icon,
@@ -36,6 +38,9 @@ const selectedReclaim = ref<any>(null)
 const showScanModal = ref(false)
 const showClearModal = ref(false)
 const showMobileMenu = ref(false)
+const showReclaimModal = ref(false)
+const alertState = ref({ show: false, title: '', message: '', type: 'info' as 'info'|'success'|'error' })
+
 const scanNodes = ref<{ address: string, nickname: string, isEditing: boolean }[]>([])
 const scanNetwork = ref({ type: 'mainnet', customUrl: '' })
 
@@ -89,7 +94,7 @@ async function openWhitelistModal() {
     whitelistAccounts.value = data.accounts || []
     showWhitelistModal.value = true
   } catch (e) {
-    alert('Failed to load whitelist')
+    alertState.value = { show: true, title: 'Error', message: 'Failed to load whitelist configuration.', type: 'error' }
   }
 }
 
@@ -102,9 +107,9 @@ async function saveWhitelist() {
       }
     })
     showWhitelistModal.value = false
-    alert('Whitelist updated successfully')
+    alertState.value = { show: true, title: 'Success', message: 'Whitelist configuration updated successfully.', type: 'success' }
   } catch (e) {
-    alert('Failed to save whitelist')
+    alertState.value = { show: true, title: 'Error', message: 'Failed to save whitelist configuration.', type: 'error' }
   }
 }
 
@@ -116,32 +121,21 @@ function removeWhitelistAccount(index: number) {
   whitelistAccounts.value.splice(index, 1)
 }
 
-async function reclaimRent(reclaim: any) {
-  // Extra safety check for User Owned accounts
-  if (reclaim.reason === 'USER_OWNED') {
-    if (!window.confirm("WARNING: You are attempting to close a User-Owned account.\n\nOnly the actual owner's private key can authorize this. The Kora Node key will fail.\n\nDo you hold the User's Private Key?")) {
-      return
-    }
-  }
+function initiateReclaim(reclaim: any) {
+  // If user owned, we still show the modal but with specific warning (handled by ReclaimModal)
+  selectedReclaim.value = reclaim
+  showReclaimModal.value = true
+}
 
-  const privateKey = prompt(
-    'Enter your authority private key (base58 or JSON array):\n\n' +
-    '  Your key is ONLY used for this transaction and NOT stored.\n' +
-    '  This should be the authority of the account being closed.'
-  )
+async function executeReclaim(privateKey: string) {
+  showReclaimModal.value = false
+  const reclaim = selectedReclaim.value
   
   if (!privateKey || !privateKey.trim()) {
-    alert('Private key required to sign transaction')
+    alertState.value = { show: true, title: 'Validation Error', message: 'Private key is required to sign the transaction.', type: 'error' }
     return
   }
 
-  if (!confirm(
-    `  FINAL CONFIRMATION\n\n` +
-    `Reclaim ${reclaim.amount} SOL from:\n${reclaim.account}\n\n` +
-    `Your private key will be sent to the server for signing ONLY.\n` +
-    `Are you sure?`
-  )) return
-  
   isReclaiming.value = true
   try {
     const res: any = await $fetch('/api/reclaim', {
@@ -168,13 +162,18 @@ async function reclaimRent(reclaim: any) {
       reclaim.currentStatus = 'reclaimed'
       selectedReclaim.value = { ...reclaim, currentStatus: 'reclaimed' }
       
-      alert(`Success!\n\nReclaimed ${res.amount.toFixed(6)} SOL\nTX: ${res.tx}`)
+      alertState.value = { 
+        show: true, 
+        title: 'Reclaim Successful', 
+        message: `Successfully reclaimed ${res.amount.toFixed(6)} SOL.\nTransaction ID: ${res.tx}`, 
+        type: 'success' 
+      }
       refresh()
     } else {
-      alert(`Error: ${res.message || res.error}`)
+      alertState.value = { show: true, title: 'Reclaim Failed', message: res.message || res.error, type: 'error' }
     }
   } catch (e: any) {
-    alert(`Failed: ${e.data?.message || e.message}`)
+    alertState.value = { show: true, title: 'System Error', message: e.data?.message || e.message, type: 'error' }
   } finally {
     isReclaiming.value = false
   }
@@ -234,7 +233,7 @@ async function triggerScan() {
   const activeNodes = scanNodes.value.filter(n => n.address.trim())
   
   if (activeNodes.length === 0) {
-    alert('Please enter at least one wallet address.')
+    alertState.value = { show: true, title: 'Configuration Error', message: 'Please enter at least one Kora Node address to scan.', type: 'error' }
     return
   }
 
@@ -293,7 +292,7 @@ async function triggerScan() {
     
   } catch (e) {
     isScanning.value = false
-    alert('Scan interrupted: ' + e.message)
+    alertState.value = { show: true, title: 'Scan Failed', message: `Scan process interrupted: ${e.message}`, type: 'error' }
   }
 }
 
@@ -931,7 +930,7 @@ async function checkHealth() {
         <div class="mt-8 space-y-3">
           <button 
             v-if="selectedReclaim.currentStatus === 'active'"
-            @click="reclaimRent(selectedReclaim)"
+            @click="initiateReclaim(selectedReclaim)"
             :disabled="isReclaiming"
             :class="[
               'block w-full py-4 font-bold uppercase tracking-widest transition-colors text-center disabled:opacity-50 disabled:cursor-not-allowed',
@@ -983,6 +982,23 @@ async function checkHealth() {
     <transition name="fade">
       <div v-if="selectedReclaim" class="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm" @click="selectedReclaim = null"></div>
     </transition>
+
+    <!-- Global Modals -->
+    <AlertModal 
+      :show="alertState.show" 
+      :title="alertState.title" 
+      :message="alertState.message" 
+      :type="alertState.type" 
+      @close="alertState.show = false" 
+    />
+
+    <ReclaimModal
+      :show="showReclaimModal"
+      :account="selectedReclaim?.account || ''"
+      :is-user-owned="selectedReclaim?.reason === 'USER_OWNED'"
+      @close="showReclaimModal = false"
+      @confirm="executeReclaim"
+    />
   </div>
 </template>
 
