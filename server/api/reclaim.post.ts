@@ -6,7 +6,9 @@ import {
   setTransactionMessageLifetimeUsingBlockhash,
   appendTransactionMessageInstructions,
   signTransactionMessageWithSigners,
-  getBase64EncodedWireTransaction
+  getBase64EncodedWireTransaction,
+  createKeyPairFromBytes,
+  createSignerFromKeyPair
 } from '@solana/kit'
 import bs58 from 'bs58'
 import { globalStats } from './stats.get'
@@ -94,15 +96,12 @@ export default defineEventHandler(async (event) => {
     message = setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, message)
     message = appendTransactionMessageInstructions(instructions, message)
 
-    const keyPair = await crypto.subtle.importKey(
-      'raw', authorityBytes.slice(0, 32),
-      { name: 'Ed25519', namedCurve: 'Ed25519' },
-      false, ['sign']
-    )
+    // 6. Sign transaction
+    // Create signer from raw bytes using Kit helpers
+    const keyPair = await createKeyPairFromBytes(authorityBytes)
+    const signer = await createSignerFromKeyPair(keyPair)
 
-    const signedMessage = await signTransactionMessageWithSigners(message, [{
-      privateKey: keyPair, publicKey: address(authorityPubkey)
-    }])
+    const signedMessage = await signTransactionMessageWithSigners(message)
 
     // 5. Send Transaction (Nuclear option: bypass library wrapper if it keeps failing with encoding)
     const encodedTx = getBase64EncodedWireTransaction(signedMessage)
