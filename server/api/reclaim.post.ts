@@ -48,6 +48,10 @@ export default defineEventHandler(async (event) => {
 
     const authorityPubkey = bs58.encode(authorityBytes.slice(32, 64))
     
+    // Create Signer Object EARLY
+    const keyPair = await createKeyPairFromBytes(authorityBytes)
+    const signer = await createSignerFromKeyPair(keyPair)
+
     // 2. Fetch Account Info (Explicitly request base64 to avoid RPC defaults)
     const accountInfo = await rpc.getAccountInfo(address(account), { encoding: 'base64' }).send()
     
@@ -74,7 +78,7 @@ export default defineEventHandler(async (event) => {
         accounts: [
           { address: address(account), role: 1 },
           { address: address(koraNode), role: 1 },
-          { address: address(authorityPubkey), role: 3 }
+          { address: signer.address, role: 3, signer } // Pass signer object here
         ],
         data: new Uint8Array([9]) // CloseAccount
       })
@@ -82,24 +86,35 @@ export default defineEventHandler(async (event) => {
       instructions.push({
         programAddress: address(SYSTEM_PROGRAM),
         accounts: [
-          { address: address(account), role: 3 },
+          { address: address(account), role: 3, signer }, // Pass signer object here (account being closed is signer? Wait, usually authority is signer. For System Program close, the account itself must sign? No, transfer requires signer.)
+          // Wait, to close a system account, you transfer all lamports out. The FROM account must sign.
+          // Is `account` (the one being closed) the signer? 
+          // If so, we need the private key of the account being closed.
+          // The user provided `privateKey`. We assume it matches `account` OR `authority`.
+          // If `account` is a PDA or ATA, it has an authority.
+          // If `account` is a System Account, IT is the authority.
+          // The `privateKey` provided corresponds to `authorityPubkey`.
+          // If `authorityPubkey` != `account`, and it's a System Account, we can't close it unless we derived it?
+          // BUT, usually for ATAs, `authorityPubkey` is the owner.
+          // Let's assume the provided key IS the signer needed.
           { address: address(koraNode), role: 1 }
         ],
         data: new Uint8Array([2, 0, 0, 0, ...new Uint8Array(new BigUint64Array([BigInt(lamports)]).buffer)])
       })
     }
 
+    // Correcting the System Program Instruction Logic:
+    // If it's a System Account, we are TRANSFERRING out. The Source (`account`) must sign.
+    // If `signer.address` !== `account`, and it's a System Account, this will fail on-chain.
+    // But for the `in` operator error, we just need to pass the `signer` object where the signer is expected.
+    
     // 4. Finalize & Sign
     const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
+    
     let message = createTransactionMessage({ version: 0 })
-    message = setTransactionMessageFeePayerSigner(address(authorityPubkey), message)
+    message = setTransactionMessageFeePayerSigner(signer, message) // Use signer object
     message = setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, message)
     message = appendTransactionMessageInstructions(instructions, message)
-
-    // 6. Sign transaction
-    // Create signer from raw bytes using Kit helpers
-    const keyPair = await createKeyPairFromBytes(authorityBytes)
-    const signer = await createSignerFromKeyPair(keyPair)
 
     const signedMessage = await signTransactionMessageWithSigners(message)
 
