@@ -586,32 +586,17 @@ async function checkHealth() {
           </div>
         </div>
 
-        <!-- Col 2: Chart & Command Center -->
+        <!-- Col 2: Command Center & Chart -->
         <div class="flex flex-col gap-0 bg-[#050505]">
-           <!-- Row 1: Chart (SOL Locked per Node) -->
-           <div class="flex flex-col gap-0 border-b border-gray-900 p-6">
-              <!-- Using BarChartInteractive as "SOL Locked per Node" visual -->
-              <BarChartInteractive :logs="logs" />
-              
-              <!-- Indepth Analytics Button -->
-              <button 
-                @click="currentTab = 'analytics'"
-                class="self-end mt-4 py-3 px-6 border border-[#cc5500] text-[#cc5500] hover:bg-[#cc5500] hover:text-black transition-all duration-300 uppercase font-bold tracking-widest text-xs flex items-center gap-2 group"
-              >
-                Indepth Analytics <AnalysisTextLinkIcon size="16" class="group-hover:translate-x-1 transition-transform" />
-              </button>
-           </div>
-
-           <!-- Row 2: Command Center -->
-            <div class="h-full flex flex-col">
-               <h3 class="text-xs font-bold uppercase tracking-[0.2em] py-4 px-6 text-gray-400 border-b border-gray-900 bg-[#050505]">Command Center</h3>
+           <!-- Row 1: Command Center -->
+            <div class="p-6 border-b border-gray-900">
+               <h3 class="text-xs font-bold uppercase tracking-[0.2em] mb-6 text-gray-400 border-b border-gray-800 pb-2">Command Center</h3>
                
-               <div class="flex flex-col flex-grow">
-                  <!-- Action Buttons Row -->
-                  <div class="flex border-b border-gray-900">
+               <div class="flex flex-col gap-4">
+                  <div class="flex gap-2">
                     <button 
                       @click="showScanModal = true"
-                      class="flex-1 py-6 bg-[#cc5500] text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white transition-colors"
+                      class="flex-1 py-4 bg-[#cc5500] text-black font-bold uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-white transition-colors"
                     >
                       <Search01Icon size="16" /> Initialize Scan
                     </button>
@@ -624,8 +609,7 @@ async function checkHealth() {
                     </button>
                   </div>
 
-                  <!-- Filter Row -->
-                  <div class="bg-[#050505] p-4 flex justify-between items-center flex-grow">
+                  <div class="bg-black border border-gray-800 p-2 flex justify-between items-center">
                      <span class="text-[10px] text-gray-500 uppercase font-bold px-2">Log Filter</span>
                      <div class="flex bg-[#111] border border-gray-900 p-1 gap-1">
                         <button 
@@ -643,6 +627,20 @@ async function checkHealth() {
                   </div>
                </div>
             </div>
+
+           <!-- Row 2: Chart (SOL Locked per Node) -->
+           <div class="flex flex-col gap-0 p-6 h-full">
+              <!-- Using BarChartInteractive as "SOL Locked per Node" visual -->
+              <BarChartInteractive :logs="logs" />
+              
+              <!-- Indepth Analytics Button -->
+              <button 
+                @click="currentTab = 'analytics'"
+                class="self-end mt-4 py-3 px-6 border border-[#cc5500] text-[#cc5500] hover:bg-[#cc5500] hover:text-black transition-all duration-300 uppercase font-bold tracking-widest text-xs flex items-center gap-2 group"
+              >
+                Indepth Analytics <AnalysisTextLinkIcon size="16" class="group-hover:translate-x-1 transition-transform" />
+              </button>
+           </div>
         </div>
       </div>
     </div>
