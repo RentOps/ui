@@ -323,56 +323,105 @@ async function checkHealth() {
 <template>
   <div class="p-4 md:p-8 max-w-[1600px] mx-auto font-oswald relative">
     <!-- Header -->
-    <header class="flex justify-between items-center mb-16 border-b border-gray-900 pb-4 relative">
+    <header class="flex justify-between items-center mb-12 border-b border-gray-900 pb-6 relative">
       <div class="flex items-center gap-4 w-1/3">
         <div class="bg-[#cc5500] p-3 text-black">
           <DashboardSquare01Icon size="32" stroke-width="2" />
         </div>
-        <div>
+        <div class="hidden sm:block">
           <h2 class="text-[#cc5500] text-sm font-bold uppercase tracking-[0.2em] mb-1">Operator Dashboard</h2>
           <h1 class="text-3xl font-bold tracking-tighter">RENTOPS<span class="text-[#cc5500]">.SYS</span></h1>
         </div>
       </div>
 
-      <!-- Centered Tab Switcher (Square Pill) -->
-      <div class="flex justify-center w-1/3">
+      <!-- Centered Tab Switcher (Desktop) -->
+      <div class="hidden md:flex justify-center w-1/3">
          <div class="flex bg-black border border-gray-800 p-1">
           <button 
             @click="currentTab = 'home'"
             :class="[
-              'px-6 py-2 text-xs font-bold uppercase tracking-widest transition-colors border border-transparent',
+              'px-6 py-2 text-xs font-bold uppercase tracking-widest transition-colors border border-transparent flex items-center gap-2',
               currentTab === 'home' ? 'bg-[#cc5500] text-black border-black' : 'text-gray-500 hover:text-white'
             ]"
           >
-            Home
+            <Home01Icon size="16" /> Home
           </button>
           <div class="w-px bg-gray-800 my-1 mx-1"></div>
           <button 
             @click="currentTab = 'analytics'"
             :class="[
-              'px-6 py-2 text-xs font-bold uppercase tracking-widest transition-colors border border-transparent',
+              'px-6 py-2 text-xs font-bold uppercase tracking-widest transition-colors border border-transparent flex items-center gap-2',
               currentTab === 'analytics' ? 'bg-[#cc5500] text-black border-black' : 'text-gray-500 hover:text-white'
             ]"
           >
-            Analytics
+            <ChartAverageIcon size="16" /> Analytics
           </button>
          </div>
       </div>
+
+      <!-- Mobile Menu Trigger -->
+      <div class="md:hidden">
+        <button @click="showMobileMenu = !showMobileMenu" class="p-2 text-gray-400 hover:text-[#cc5500]">
+          <MoreHorizontalCircle01Icon size="32" />
+        </button>
+      </div>
       
-      <!-- Right Side Status -->
+      <!-- Right Side Status (Desktop) -->
       <div class="hidden md:block text-right w-1/3">
-        <div class="text-[10px] text-gray-600 uppercase tracking-widest">System Status</div>
-        <div class="text-[#cc5500] font-bold text-xs flex items-center gap-2 justify-end">
-          <div class="w-2 h-2 bg-[#cc5500] rounded-full animate-pulse"></div>
-          OPERATIONAL
+        <div class="flex justify-end items-center gap-6">
+          <div class="flex flex-col items-end">
+            <div class="text-[10px] text-gray-600 uppercase tracking-widest">System Status</div>
+            <div class="text-[#cc5500] font-bold text-xs flex items-center gap-2 justify-end uppercase tracking-tighter">
+              <div class="w-2 h-2 bg-[#cc5500] rounded-full animate-pulse"></div>
+              OPERATIONAL
+            </div>
+          </div>
+          
+          <button 
+            @click="showClearModal = true"
+            class="group p-2 border border-gray-800 hover:border-red-500 hover:bg-red-500/10 transition-colors"
+            title="Reset Session"
+          >
+            <PowerIcon size="20" class="text-gray-600 group-hover:text-red-500 transition-colors" />
+          </button>
         </div>
       </div>
     </header>
+
+    <!-- Mobile Menu Overlay -->
+    <transition name="fade">
+      <div v-if="showMobileMenu" class="md:hidden fixed inset-0 z-[100] bg-black/95 flex flex-col p-8 backdrop-blur-md">
+        <div class="flex justify-between items-center mb-12">
+          <h2 class="text-2xl font-black tracking-tighter uppercase">RENTOPS<span class="text-[#cc5500]">.SYS</span></h2>
+          <button @click="showMobileMenu = false" class="text-gray-500"><Cancel01Icon size="32" /></button>
+        </div>
+        
+        <nav class="flex flex-col gap-4">
+          <button @click="currentTab = 'home'; showMobileMenu = false" class="flex items-center gap-4 text-left py-6 px-4 border border-gray-900 font-bold uppercase tracking-widest hover:bg-[#cc5500] hover:text-black transition-colors">
+            <Home01Icon /> Home
+          </button>
+          <button @click="currentTab = 'analytics'; showMobileMenu = false" class="flex items-center gap-4 text-left py-6 px-4 border border-gray-900 font-bold uppercase tracking-widest hover:bg-[#cc5500] hover:text-black transition-colors">
+            <ChartAverageIcon /> Analytics
+          </button>
+          <div class="grid grid-cols-2 gap-4 mt-4">
+            <button @click="showScanModal = true; showMobileMenu = false" class="flex flex-col items-center gap-2 justify-center py-6 border border-gray-900 text-xs font-bold uppercase tracking-widest hover:border-[#cc5500] hover:text-[#cc5500]">
+              <Search01Icon /> Scan
+            </button>
+            <button @click="openWhitelistModal(); showMobileMenu = false" class="flex flex-col items-center gap-2 justify-center py-6 border border-gray-900 text-xs font-bold uppercase tracking-widest hover:border-[#cc5500] hover:text-[#cc5500]">
+              <SecurityIcon /> Whitelist
+            </button>
+          </div>
+          <button @click="showClearModal = true; showMobileMenu = false" class="mt-8 flex items-center justify-center gap-4 py-6 border border-red-900/50 text-red-500 font-bold uppercase tracking-widest hover:bg-red-500 hover:text-black transition-colors">
+            <PowerIcon /> Reset Session
+          </button>
+        </nav>
+      </div>
+    </transition>
     
     
-    <div v-if="currentTab === 'home'" class="space-y-8">
-      <!-- Stats Cards Row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div v-if="currentTab === 'home'" class="space-y-0">
+      <!-- Stats Cards Row (Clustered) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 border border-gray-900 bg-[#050505] mb-8">
         <div 
           v-for="(stat, index) in [
             { label: 'Total Locked SOL', value: stats?.totalLocked || 0, icon: Blockchain03Icon, color: 'text-white', precision: 4 },
@@ -381,7 +430,7 @@ async function checkHealth() {
             { label: 'Idle Rent Value', value: (stats?.idleRent || 0) * solPrice, icon: Coins01Icon, color: 'text-[#cc5500]', precision: 2, prefix: '$' }
           ]" 
           :key="index"
-          class="bg-[#050505] border border-gray-900 p-6 group hover:border-[#cc5500] transition-all duration-300"
+          class="p-6 group hover:bg-[#111] transition-colors border-b md:border-b-0 md:border-r border-gray-900 last:border-r-0 lg:border-b-0"
           @mouseenter="statHoverKeys[index]++"
         >
           <div class="flex justify-between items-start mb-4">
@@ -396,10 +445,10 @@ async function checkHealth() {
         </div>
       </div>
 
-      <!-- Main Content Grid -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Main Content Grid (Clustered) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-gray-900">
         <!-- Column 1: Reclamation Stream (Live Feed) -->
-        <div class="bg-[#050505] border border-gray-900 overflow-hidden flex flex-col h-full max-h-[800px]">
+        <div class="bg-[#050505] overflow-hidden flex flex-col h-full max-h-[800px] border-b lg:border-b-0 lg:border-r border-gray-900">
           <div class="bg-gray-900/50 px-6 py-3 flex flex-col gap-3 border-b border-gray-800 flex-shrink-0">
             <div class="flex justify-between items-center">
               <h3 class="text-xs font-bold uppercase tracking-[0.2em] text-gray-400 flex items-center gap-2">
@@ -502,23 +551,23 @@ async function checkHealth() {
         </div>
 
         <!-- Col 2: Chart & Command Center -->
-        <div class="flex flex-col gap-8">
+        <div class="flex flex-col gap-0 bg-[#050505]">
            <!-- Row 1: Chart (SOL Locked per Node) -->
-           <div class="flex flex-col gap-4">
+           <div class="flex flex-col gap-0 border-b border-gray-900 p-6">
               <!-- Using BarChartInteractive as "SOL Locked per Node" visual -->
               <BarChartInteractive :logs="logs" />
               
               <!-- Indepth Analytics Button -->
               <button 
                 @click="currentTab = 'analytics'"
-                class="self-end py-3 px-6 border border-[#cc5500] text-[#cc5500] hover:bg-[#cc5500] hover:text-black transition-all duration-300 uppercase font-bold tracking-widest text-xs flex items-center gap-2 group"
+                class="self-end mt-4 py-3 px-6 border border-[#cc5500] text-[#cc5500] hover:bg-[#cc5500] hover:text-black transition-all duration-300 uppercase font-bold tracking-widest text-xs flex items-center gap-2 group"
               >
                 Indepth Analytics <AnalysisTextLinkIcon size="16" class="group-hover:translate-x-1 transition-transform" />
               </button>
            </div>
 
            <!-- Row 2: Command Center -->
-            <div class="bg-[#050505] border border-gray-900 p-6">
+            <div class="p-6 h-full">
                <h3 class="text-xs font-bold uppercase tracking-[0.2em] mb-6 text-gray-400 border-b border-gray-800 pb-2">Command Center</h3>
                
                <div class="flex flex-col gap-4">
@@ -839,6 +888,35 @@ async function checkHealth() {
       </div>
     </transition>
     
+    <!-- CLEAR SESSION MODAL -->
+    <div v-if="showClearModal" class="fixed inset-0 bg-black/90 flex items-center justify-center z-50 p-4" @click.self="showClearModal = false">
+      <div class="w-full max-w-sm bg-[#050505] border border-red-900">
+        <div class="bg-red-900/20 text-red-500 px-6 py-4 text-sm font-bold flex justify-between uppercase items-center border-b border-red-900/50">
+          <span class="flex items-center gap-2"><Alert02Icon /> System Reset</span>
+          <button @click="showClearModal = false" class="hover:text-white transition-colors">
+            <Cancel01Icon size="20" />
+          </button>
+        </div>
+        
+        <div class="p-8 text-center">
+          <PowerIcon size="48" class="text-red-500 mx-auto mb-6" />
+          <h3 class="text-white font-bold uppercase tracking-widest mb-4">Confirm Reset</h3>
+          <p class="text-gray-400 text-sm mb-8 leading-relaxed">
+            This will clear all local configuration, cached nodes, and session history. The dashboard will reload to a fresh state.
+          </p>
+          
+          <div class="grid grid-cols-2 gap-4">
+            <button @click="showClearModal = false" class="py-3 border border-gray-800 text-gray-400 font-bold uppercase text-xs hover:text-white hover:border-gray-600 transition-colors">
+              Cancel
+            </button>
+            <button @click="clearSession" class="py-3 bg-red-600 text-black font-bold uppercase text-xs hover:bg-red-500 transition-colors">
+              Confirm Reset
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Backdrop for Drawer -->
     <transition name="fade">
       <div v-if="selectedReclaim" class="fixed inset-0 bg-black/80 z-40 backdrop-blur-sm" @click="selectedReclaim = null"></div>
