@@ -14,6 +14,7 @@
     "@solana/kora": "^0.1.1",
     "@unovis/ts": "^1.6.2",
     "@unovis/vue": "^1.6.2",
+    "@vercel/analytics": "^1.6.1",
     "bs58": "^6.0.0",
     "clsx": "^2.1.1",
     "hugeicons-vue": "^0.0.1",

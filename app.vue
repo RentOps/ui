@@ -1,6 +1,11 @@
+<script setup lang="ts">
+import { Analytics } from '@vercel/analytics/nuxt'
+</script>
+
 <template>
   <div class="min-h-screen bg-black text-white font-oswald selection:bg-[#cc5500] selection:text-black">
     <NuxtPage />
+    <Analytics />
   </div>
 </template>
 
