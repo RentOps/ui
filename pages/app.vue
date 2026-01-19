@@ -298,8 +298,10 @@ function openDrawer(reclaim: any) {
 
 async function fetchSolPrice() {
   try {
-    const data: any = await $fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd')
-    solPrice.value = data.solana.usd
+    const data: any = await $fetch('/api/price')
+    if (data && data.solana && data.solana.usd) {
+      solPrice.value = data.solana.usd
+    }
   } catch (e) {
     console.warn('Failed to fetch SOL price, using default')
   }
