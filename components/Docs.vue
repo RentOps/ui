@@ -33,9 +33,9 @@ const activeDoc = ref('Getting Started')
 </script>
 
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-0 border border-gray-900 bg-[#050505] lg:h-[800px]">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-0 border border-gray-900 bg-[#050505] h-[calc(100vh-200px)] overflow-hidden">
     <!-- Sidebar -->
-    <div class="border-b lg:border-b-0 lg:border-r border-gray-900 bg-[#0a0a0a] flex flex-col max-h-[300px] lg:max-h-full">
+    <div class="border-b lg:border-b-0 lg:border-r border-gray-900 bg-[#0a0a0a] flex flex-col h-full overflow-hidden">
       <div class="p-6 border-b border-gray-900 flex-shrink-0">
         <h3 class="text-sm font-bold uppercase tracking-[0.2em] text-[#cc5500]">Documentation</h3>
       </div>
