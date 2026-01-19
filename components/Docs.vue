@@ -66,7 +66,7 @@ const activeDoc = ref('Getting Started')
     </div>
 
     <!-- Content Area -->
-    <div class="lg:col-span-3 p-8 lg:p-12 overflow-y-auto custom-scrollbar bg-[#050505] min-h-[500px] lg:h-full">
+    <div class="lg:col-span-3 p-8 lg:p-12 overflow-y-auto custom-scrollbar bg-[#050505] h-full">
       <div class="max-w-3xl">
         <div class="mb-8 pb-4 border-b border-gray-800">
           <span class="text-[#cc5500] text-xs font-bold uppercase tracking-widest mb-2 block">/ Docs / {{ activeDoc }}</span>
