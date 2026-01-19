@@ -543,14 +543,15 @@ async function checkHealth() {
                     <span 
                       :class="[
                         'text-[9px] font-black uppercase px-2 py-0.5 tracking-tighter',
+                        log.reason === 'RECLAIMABLE' ? 'bg-[#cc5500]/20 text-[#cc5500] border border-[#cc5500]' :
+                        log.reason === 'USER_OWNED' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
                         log.type === 'detected' ? 'bg-orange-500/10 text-orange-500 border border-orange-500/20' : 
-                        log.type === 'success' ? 'bg-[#cc5500]/10 text-[#cc5500] border border-[#cc5500]/20' :
+                        log.type === 'success' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
                         log.type === 'error' ? 'bg-red-500/10 text-red-500 border border-red-500/20' :
-                        log.type === 'system' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
                         'bg-gray-800 text-gray-400'
                       ]"
                     >
-                      {{ log.type }}
+                      {{ log.reason === 'RECLAIMABLE' ? 'ACTION_REQ' : (log.reason === 'USER_OWNED' ? 'SPONSORED' : log.type) }}
                     </span>
                   </td>
                   <td class="px-6 py-4">
@@ -910,16 +911,31 @@ async function checkHealth() {
             <p class="text-[10px] uppercase text-gray-500 mb-1">Reasoning</p>
             <p class="text-sm text-gray-300 border-l-2 border-gray-700 pl-3 py-1">{{ selectedReclaim.reason }}</p>
           </div>
+
+          <!-- Ownership Warning -->
+          <div v-if="selectedReclaim.reason === 'USER_OWNED'" class="bg-blue-900/20 border-l-2 border-blue-500 p-4">
+             <p class="text-xs text-blue-400 font-bold uppercase mb-1">Sponsored Asset</p>
+             <p class="text-[10px] text-gray-400 leading-relaxed">
+               This account is owned by a user {{ selectedReclaim.currentOwner ? '(' + selectedReclaim.currentOwner.slice(0,8) + '...)' : '' }}. 
+               The Kora node paid the rent, but does not have authority to close it. 
+               Reclamation is only possible if you hold the user's private key.
+             </p>
+          </div>
         </div>
 
         <div class="mt-8 space-y-3">
           <button 
             v-if="selectedReclaim.currentStatus === 'active'"
             @click="reclaimRent(selectedReclaim)"
-            :disabled="isReclaiming"
-            class="block w-full py-4 bg-[#cc5500] text-black font-bold uppercase tracking-widest hover:bg-white transition-colors text-center disabled:opacity-50 disabled:cursor-not-allowed"
+            :disabled="isReclaiming || (selectedReclaim.reason === 'USER_OWNED' && !confirm('You are attempting to close a User-Owned account. Do you hold the User\'s Private Key?'))"
+            :class="[
+              'block w-full py-4 font-bold uppercase tracking-widest transition-colors text-center disabled:opacity-50 disabled:cursor-not-allowed',
+              selectedReclaim.reason === 'USER_OWNED' 
+                ? 'bg-gray-800 text-gray-500 hover:bg-gray-700' 
+                : 'bg-[#cc5500] text-black hover:bg-white'
+            ]"
           >
-            {{ isReclaiming ? 'Initiating...' : 'Reclaim Rent SOL' }}
+            {{ isReclaiming ? 'Initiating...' : (selectedReclaim.reason === 'USER_OWNED' ? 'Authorize & Reclaim' : 'Reclaim Rent SOL') }}
           </button>
           
           <a :href="`https://explorer.solana.com/tx/${selectedReclaim.tx}?cluster=devnet`" target="_blank" class="block w-full py-4 border border-gray-800 text-gray-400 font-bold uppercase tracking-widest hover:border-[#cc5500] hover:text-[#cc5500] transition-colors text-center">

@@ -1,6 +1,7 @@
 import { createSolanaRpc, address } from '@solana/kit'
 import fs from 'fs'
 import path from 'path'
+import bs58 from 'bs58'
 import { globalStats } from '../api/stats.get'
 
 export const useScanner = () => {
@@ -182,6 +183,72 @@ export const useScanner = () => {
       console.log(`[LOG] Total signatures: ${signatures.length}`)
       console.log(`[LOG] Successfully analyzed: ${analyzedCount}`)
       console.log(`[LOG] Rent events found: ${foundCount}`)
+      
+      // Post-process: Check current state of detected accounts
+      if (foundLogs.length > 0) {
+        console.log(`[LOG] Verifying current state of ${foundLogs.length} detected accounts...`)
+        const uniqueAccounts = [...new Set(foundLogs.map(l => l.account).filter(a => a !== 'SCAN_COMPLETE'))]
+        
+        // Fetch in batches of 100
+        for (let i = 0; i < uniqueAccounts.length; i += 100) {
+          const batch = uniqueAccounts.slice(i, i + 100)
+          try {
+            const accountsInfo = await rpc.getMultipleAccounts(batch.map(a => address(a)), { encoding: 'base64' }).send()
+            
+            if (accountsInfo && accountsInfo.value) {
+               accountsInfo.value.forEach((info, idx) => {
+                  const accAddress = batch[idx]
+                  // Find logs to update (there might be multiple events for same account)
+                  const accountLogs = foundLogs.filter(l => l.account === accAddress)
+                  
+                  if (!info) {
+                     accountLogs.forEach(log => {
+                       log.reason = 'Already_Closed'
+                       log.currentStatus = 'closed'
+                       log.isReclaimable = false
+                       log.currentOwner = 'None'
+                     })
+                     return
+                  }
+  
+                  const ownerProgram = info.owner
+                  let authority = ownerProgram // Default to program ID if parsing fails
+  
+                  // Check if Token Account
+                  if (ownerProgram === 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA') {
+                     const data = Buffer.from(info.data[0], 'base64')
+                     // Token Account Layout: mint(32) + owner(32)
+                     if (data.length >= 64) {
+                       try {
+                         authority = bs58.encode(data.subarray(32, 64))
+                       } catch (e) {}
+                     }
+                  } else if (ownerProgram === '11111111111111111111111111111111') {
+                     // System account: Authority is the account itself
+                     authority = accAddress
+                  }
+  
+                  accountLogs.forEach(log => {
+                    log.currentOwner = authority
+                    // It is reclaimable IF the authority matches the Kora Node
+                    if (authority === nodeAddress) {
+                       log.isReclaimable = true
+                       log.reason = 'RECLAIMABLE'
+                       log.type = 'detected' // Keep as detected/actionable
+                    } else {
+                       log.isReclaimable = false
+                       log.reason = 'USER_OWNED'
+                       log.type = 'skip' // Mark as skip/info so it doesn't clutter actionable list or show with different color
+                    }
+                  })
+               })
+            }
+          } catch (batchErr) {
+            console.warn(`[WARN] Failed to fetch batch account info: ${batchErr.message}`)
+          }
+        }
+      }
+
       console.log(`[LOG] ===========================`)
 
       // Add summary log

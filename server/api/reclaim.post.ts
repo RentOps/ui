@@ -62,6 +62,7 @@ export default defineEventHandler(async (event) => {
     const lamports = Number(accountInfo.value.lamports)
     const sol = lamports / 1e9
     const owner = accountInfo.value.owner
+    console.log(`[RECLAIM] Balance: ${sol} SOL, Program Owner: ${owner}`)
 
     // 3. Build Instructions
     const TOKEN_PROGRAM = 'TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA'
@@ -71,6 +72,20 @@ export default defineEventHandler(async (event) => {
     if (owner === TOKEN_PROGRAM) {
       const data = Buffer.from(accountInfo.value.data[0], 'base64')
       const tokenAmount = data.readBigUInt64LE(64)
+      
+      // Parse Token Account Data to find the 'owner' (authority) field
+      // Layout: mint(32) + owner(32) + amount(8) + ...
+      const tokenAccountOwner = bs58.encode(data.subarray(32, 64))
+      console.log(`[RECLAIM] Token Account Authority: ${tokenAccountOwner}`)
+
+      // Check if we have authority
+      if (tokenAccountOwner !== authorityPubkey) {
+         return {
+           success: false,
+           message: `Cannot reclaim: Account is owned by user ${tokenAccountOwner}. You (Kora Node) are ${authorityPubkey}. Only the owner can close this account.`
+         }
+      }
+
       if (tokenAmount > 0n) return { success: false, message: 'Account still holds tokens' }
 
       instructions.push({
@@ -78,25 +93,24 @@ export default defineEventHandler(async (event) => {
         accounts: [
           { address: address(account), role: 1 },
           { address: address(koraNode), role: 1 },
-          { address: signer.address, role: 3, signer } // Pass signer object here
+          { address: address(authorityPubkey), role: 3 }
         ],
         data: new Uint8Array([9]) // CloseAccount
       })
     } else {
+      // System Account Logic
+      // For System accounts, the address ITSELF is the authority/signer.
+      if (account !== authorityPubkey) {
+         return {
+           success: false,
+           message: `Cannot reclaim: System Account ${account} must sign for itself. You provided key for ${authorityPubkey}.`
+         }
+      }
+
       instructions.push({
         programAddress: address(SYSTEM_PROGRAM),
         accounts: [
-          { address: address(account), role: 3, signer }, // Pass signer object here (account being closed is signer? Wait, usually authority is signer. For System Program close, the account itself must sign? No, transfer requires signer.)
-          // Wait, to close a system account, you transfer all lamports out. The FROM account must sign.
-          // Is `account` (the one being closed) the signer? 
-          // If so, we need the private key of the account being closed.
-          // The user provided `privateKey`. We assume it matches `account` OR `authority`.
-          // If `account` is a PDA or ATA, it has an authority.
-          // If `account` is a System Account, IT is the authority.
-          // The `privateKey` provided corresponds to `authorityPubkey`.
-          // If `authorityPubkey` != `account`, and it's a System Account, we can't close it unless we derived it?
-          // BUT, usually for ATAs, `authorityPubkey` is the owner.
-          // Let's assume the provided key IS the signer needed.
+          { address: address(account), role: 3 },
           { address: address(koraNode), role: 1 }
         ],
         data: new Uint8Array([2, 0, 0, 0, ...new Uint8Array(new BigUint64Array([BigInt(lamports)]).buffer)])
