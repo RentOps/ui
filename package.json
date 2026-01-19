@@ -1,0 +1,26 @@
+{
+  "name": "ui",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@solana/kit": "^5.4.0",
+    "@solana/kora": "^0.1.1",
+    "@unovis/ts": "^1.6.2",
+    "@unovis/vue": "^1.6.2",
+    "bs58": "^6.0.0",
+    "clsx": "^2.1.1",
+    "hugeicons-vue": "^0.0.1",
+    "nuxt": "^4.2.2",
+    "tailwind-merge": "^3.4.0",
+    "vue": "^3.5.26",
+    "vue-router": "^4.6.4",
+    "zod": "^4.3.5"
+  }
+}
