@@ -66,6 +66,13 @@ function copyCliCommand() {
               {{ copied ? 'COPIED' : 'COPY' }}
             </span>
           </div>
+
+          <div class="mt-8 pt-6 border-t border-gray-900">
+            <p class="text-gray-500 text-xs uppercase tracking-widest mb-2">Not on Linux?</p>
+            <p class="text-gray-400 text-sm leading-relaxed">
+              Visit our <a href="https://github.com/rentops/cli" target="_blank" class="text-[#cc5500] hover:underline underline-offset-4 font-bold">official CLI repo</a> to build from source using Rust.
+            </p>
+          </div>
         </div>
       </div>
     </div>
