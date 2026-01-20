@@ -105,6 +105,63 @@ const activeDoc = ref('The Rent Problem')
             </p>
           </div>
 
+          <div v-else-if="activeDoc === 'RentOps Architecture'">
+            <p class="text-gray-400 mb-8">RentOps is built as a highly-available operational layer consisting of three core modules:</p>
+            
+            <!-- Visual Architecture Diagram -->
+            <div class="relative py-8 px-4 bg-[#0a0a0a] border border-gray-800 mb-8 overflow-hidden">
+              <div class="absolute inset-0 bg-[url('/bg.jpg')] opacity-10 mix-blend-overlay"></div>
+              
+              <div class="relative z-10 flex flex-col gap-8 items-center">
+                <!-- Source -->
+                <div class="w-48 p-4 bg-[#111] border border-gray-700 text-center">
+                  <div class="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Source</div>
+                  <div class="text-[#cc5500] font-bold">KORA NODE</div>
+                </div>
+
+                <div class="h-8 w-px bg-gray-700"></div>
+
+                <!-- Engine -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-2xl">
+                  <div class="p-4 border border-[#cc5500] bg-[#cc5500]/10 text-center">
+                    <strong class="block text-white text-xs uppercase mb-2">1. Introspection</strong>
+                    <p class="text-[10px] text-gray-400">Crawls transaction history to build sponsorship graph.</p>
+                  </div>
+                  
+                  <div class="hidden md:flex items-center justify-center text-gray-600"><ArrowRight01Icon /></div>
+                  
+                  <div class="p-4 border border-[#cc5500] bg-[#cc5500]/10 text-center">
+                    <strong class="block text-white text-xs uppercase mb-2">2. Validation</strong>
+                    <p class="text-[10px] text-gray-400">Verifies ownership & live balance via RPC.</p>
+                  </div>
+                </div>
+
+                <div class="h-8 w-px bg-gray-700"></div>
+
+                <!-- Action -->
+                <div class="w-48 p-4 bg-[#111] border border-gray-700 text-center">
+                  <div class="text-[10px] text-gray-500 uppercase tracking-widest mb-1">Execution</div>
+                  <div class="text-white font-bold">SECURE SIGNER</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div class="border border-gray-800 p-4 border-l-4 border-l-[#cc5500]">
+                <strong class="text-white uppercase text-xs block mb-2">The Introspection Engine</strong>
+                <p class="text-sm text-gray-400">A high-performance scanner that crawls the Kora Node's transaction signatures to build a graph of all subsidized account creations.</p>
+              </div>
+              <div class="border border-gray-800 p-4 border-l-4 border-l-[#cc5500]">
+                <strong class="text-white uppercase text-xs block mb-2">State Validator</strong>
+                <p class="text-sm text-gray-400">A real-time checker that uses batch RPC calls to verify current account balances, owners, and closure authorities.</p>
+              </div>
+              <div class="border border-gray-800 p-4 border-l-4 border-l-[#cc5500]">
+                <strong class="text-white uppercase text-xs block mb-2">Secure Signer</strong>
+                <p class="text-sm text-gray-400">Utilizes the modern @solana/kit (v2) stack to construct and sign atomic reclamation transactions with strict pre-computation validation.</p>
+              </div>
+            </div>
+          </div>
+
           <div v-else-if="activeDoc === 'Smart Classification'">
             <p class="text-gray-400 text-lg leading-relaxed mb-6">
               RentOps uses a dual-layer detection engine to classify rent-locked accounts:
@@ -143,11 +200,60 @@ const activeDoc = ref('The Rent Problem')
             </ul>
           </div>
 
+          <div v-else-if="activeDoc === 'Edge Case Handling'">
+            <p class="text-gray-400 mb-6">RentOps is designed to handle the complexities of the Solana network gracefully:</p>
+            <div class="space-y-4">
+              <div class="p-4 bg-[#111] border border-gray-800">
+                <strong class="text-white text-xs block mb-1 uppercase">Stale Blockhashes</strong>
+                <p class="text-xs text-gray-500">Automatically fetches fresh blockhashes before every transaction attempt to minimize 'Expired Transaction' errors.</p>
+              </div>
+              <div class="p-4 bg-[#111] border border-gray-800">
+                <strong class="text-white text-xs block mb-1 uppercase">Dust Balances</strong>
+                <p class="text-xs text-gray-500">Detects accounts with 1-2 lamports (dust) and treats them as actionable while preventing closure of high-value user assets.</p>
+              </div>
+              <div class="p-4 bg-[#111] border border-gray-800">
+                <strong class="text-white text-xs block mb-1 uppercase">RPC Failures</strong>
+                <p class="text-xs text-gray-500">Implements automatic fallbacks between Helius and public endpoints to ensure scanning continuity.</p>
+              </div>
+            </div>
+          </div>
+
+          <div v-else-if="activeDoc === 'Running a Node'">
+            <p class="text-gray-400 leading-relaxed mb-6">
+              To start monitoring your Kora Node, open the <strong>Dashboard</strong> and click "Initialize Scan". You will be prompted to enter your Kora Node's public address.
+            </p>
+            <p class="text-gray-400 leading-relaxed mb-6">
+              RentOps will begin indexing your history immediately. For automated daily reports, ensure your <code>KORA_NODE_ADDRESS</code> environment variable is set in the backend.
+            </p>
+          </div>
+
+          <div v-else-if="activeDoc === 'Using the CLI'">
+            <p class="text-gray-400 mb-6">The RentOps CLI is designed for speed and scripting. Install it using the one-liner on the landing page.</p>
+            <code class="block bg-black p-4 text-[#cc5500] text-xs mb-6 border border-gray-800">
+              $ rentops scan --kora-node [ADDRESS]
+            </code>
+            <p class="text-gray-400 text-sm">Use <code>rentops reclaim</code> to perform high-speed cleanup of hundreds of accounts simultaneously from your terminal.</p>
+          </div>
+
+          <div v-else-if="activeDoc === 'Self-Hosting Guide'">
+             <div class="p-6 border border-[#cc5500]/20 bg-[#cc5500]/5 mb-8">
+               <p class="text-sm text-white font-bold mb-2 uppercase">Security Recommendation</p>
+               <p class="text-xs text-gray-400">Because reclamation requires private keys, we recommend hosting RentOps on your own hardware or VPC.</p>
+             </div>
+             <ol class="space-y-4 text-gray-400 text-sm list-decimal pl-5">
+               <li>Clone the repo: <code>git clone https://github.com/rentops/core</code></li>
+               <li>Configure your <code>.env</code> with <code>HELIUS_RPC_API_KEY</code> and <code>TELEGRAM_BOT_TOKEN</code>.</li>
+               <li>Deploy the UI folder to Vercel or Run <code>pnpm build && pnpm start</code>.</li>
+             </ol>
+          </div>
+
           <div v-else>
              <p class="text-gray-400 text-lg leading-relaxed">
                Select a topic from the sidebar to explore RentOps documentation.
              </p>
           </div>
+
+        </div>
 
         </div>
       </div>
