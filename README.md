@@ -1,6 +1,6 @@
 # RentOps Dashboard
 
-The visual command center for the RentOps ecosystem. Built with **Nuxt**, **Tailwind**, and **Shadcn**, this dashboard provides real-time visibility into your Kora Node's rent efficiency.
+The visual command center for the RentOps ecosystem. This dashboard provides real-time visibility into your Kora Node's rent efficiency.
 
 ## Features
 
@@ -15,17 +15,14 @@ The visual command center for the RentOps ecosystem. Built with **Nuxt**, **Tail
 To run the dashboard locally for development:
 
 ```bash
-# Install dependencies
-pnpm install
-
-# Start development server
-pnpm dev
+# Install dependencies & start dev server 
+pnpm install && pnpm dev
 ```
 
 Visit `http://localhost:3000` to view the dashboard.
 
 ## Full Infrastructure Setup
 
-To deploy the complete RentOps stack (Backend + Frontend) securely on your own infrastructure, please refer to the official documentation:
+To deploy the complete RentOps stack (Backend + Frontend) securely on your own infrastructure(highly RECOMMENDED), please refer to the official documentation:
 
 [→ Installation Guide](https://rentops.davidnzube.xyz/docs)
