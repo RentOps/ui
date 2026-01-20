@@ -1,75 +1,31 @@
-# Nuxt Minimal Starter
+# RentOps Dashboard
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+The visual command center for the RentOps ecosystem. Built with **Nuxt**, **Tailwind**, and **Shadcn**, this dashboard provides real-time visibility into your Kora Node's rent efficiency.
 
-## Setup
+## Features
 
-Make sure to install dependencies:
+*   **Real-time Stream:** Watch detection events live as the scanner processes your node's history.
+*   **Smart Classification:** Automatically distinguishes between `RECLAIMABLE` (Node-Owned) and `SPONSORED` (User-Owned) accounts.
+*   **Interactive Charts:** Visualize SOL lockup trends and reclamation performance.
+*   **Safety First:** Integrated modal warnings prevent accidental closure of user-owned assets or token-holding accounts.
+*   **Documentation:** Built-in docs viewer for Kora and Solana rent mechanics.
+
+## Quick Start (Frontend Only)
+
+To run the dashboard locally for development:
 
 ```bash
-# npm
-npm install
-
-# pnpm
+# Install dependencies
 pnpm install
 
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
-npm run dev
-
-# pnpm
+# Start development server
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+Visit `http://localhost:3000` to view the dashboard.
 
-Build the application for production:
+## Full Infrastructure Setup
 
-```bash
-# npm
-npm run build
+To deploy the complete RentOps stack (Backend + Frontend) securely on your own infrastructure, please refer to the official documentation:
 
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+[→ Installation Guide](https://rentops.davidnzube.xyz/docs)
