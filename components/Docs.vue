@@ -2,34 +2,40 @@
 import { 
   Folder01Icon, 
   File01Icon, 
-  ArrowRight01Icon 
+  ArrowRight01Icon,
+  Shield01Icon,
+  Search01Icon,
+  Coins01Icon
 } from 'hugeicons-vue'
 
 const categories = [
   {
-    title: 'Kora',
+    title: 'Core Concepts',
     items: [
-      'Getting Started',
-      'Installation',
-      'Quick Start',
-      'Full Demo Guide',
-      'JSON RPC API',
-      'Operators Guide'
+      'The Rent Problem',
+      'How Kora Sponsorship Works',
+      'RentOps Architecture'
     ]
   },
   {
-    title: 'Solana',
+    title: 'Safety & Logic',
     items: [
-      'Account Model',
-      'Transactions',
-      'Programs',
-      'Cross Program Invocation',
-      'Fees'
+      'Smart Classification',
+      'Safe Reclamation',
+      'Edge Case Handling'
+    ]
+  },
+  {
+    title: 'Operations',
+    items: [
+      'Running a Node',
+      'Using the CLI',
+      'Self-Hosting Guide'
     ]
   }
 ]
 
-const activeDoc = ref('Getting Started')
+const activeDoc = ref('The Rent Problem')
 </script>
 
 <template>
@@ -74,30 +80,75 @@ const activeDoc = ref('Getting Started')
         </div>
 
         <div class="prose prose-invert prose-orange max-w-none">
-          <p class="text-gray-400 text-lg leading-relaxed mb-6">
-            Welcome to the official documentation for RentOps and the Kora Protocol. This section provides comprehensive guides on operating nodes, managing rent reclamation, and understanding the underlying Solana architecture.
-          </p>
-
-          <div class="bg-[#111] border border-gray-800 p-6 my-8">
-            <h3 class="text-white font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
-              <File01Icon size="18" class="text-[#cc5500]" /> Quick Summary
-            </h3>
-            <p class="text-sm text-gray-400">
-              RentOps automates the recovery of rent-exempt SOL from inactive Associated Token Accounts (ATAs). 
-              By introspecting Kora node transactions, it identifies sponsored accounts that have become dormant and safely reclaims the 0.002 SOL rent deposit.
+          
+          <!-- DYNAMIC CONTENT -->
+          <div v-if="activeDoc === 'The Rent Problem'">
+            <p class="text-gray-400 text-lg leading-relaxed mb-6">
+              Solana accounts require a minimum SOL balance to remain "rent-exempt" and store data on-chain. For a standard Token Account, this is approximately <strong>0.002039 SOL</strong>.
+            </p>
+            <p class="text-gray-400 text-lg leading-relaxed mb-6">
+              While small individually, this cost scales linearly. A Kora operator onboarding 100,000 users will lock up <strong>~200 SOL</strong> in rent deposits. If users churn or abandon their wallets, this capital is effectively lost to the "Rent Graveyard."
             </p>
           </div>
 
-          <h2 class="text-2xl text-white font-bold uppercase mt-12 mb-4">Core Concepts</h2>
-          <ul class="space-y-2 text-gray-400 list-disc pl-5 marker:text-[#cc5500]">
-            <li><strong>Rent Exemption:</strong> Accounts on Solana must hold a minimum balance to remain open.</li>
-            <li><strong>Sponsorship:</strong> Kora nodes often pay this rent for users during onboarding.</li>
-            <li><strong>Reclamation:</strong> Closing an empty account returns the rent SOL to the wallet that closes it (or the authority).</li>
-          </ul>
-
-          <div class="mt-12 p-4 border border-[#cc5500]/30 bg-[#cc5500]/5 text-[#cc5500] text-xs font-mono uppercase">
-            > Documentation content is currently being migrated from the legacy wiki.
+          <div v-else-if="activeDoc === 'How Kora Sponsorship Works'">
+            <div class="bg-[#111] border border-gray-800 p-6 mb-8">
+              <h3 class="text-white font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                <Coins01Icon size="18" class="text-[#cc5500]" /> The Paymaster Model
+              </h3>
+              <p class="text-sm text-gray-400">
+                Kora nodes act as a <strong>Fee Payer</strong>. When a user transaction requires an account creation (e.g., a new ATA for USDC), the Kora node signs the transaction and pays the rent lamports. Crucially, the Kora node is the <strong>Payer</strong>, but the user's wallet becomes the <strong>Owner</strong>.
+              </p>
+            </div>
+            <p class="text-gray-400 mb-4">
+              This distinction is vital: <strong>Sponsorship does not equal Ownership.</strong> Standard Solana security rules prevent the Payer from closing an account they do not own.
+            </p>
           </div>
+
+          <div v-else-if="activeDoc === 'Smart Classification'">
+            <p class="text-gray-400 text-lg leading-relaxed mb-6">
+              RentOps uses a dual-layer detection engine to classify rent-locked accounts:
+            </p>
+            <ul class="space-y-4 text-gray-400">
+              <li class="flex gap-4">
+                <div class="w-8 h-8 rounded-full bg-[#cc5500]/20 flex items-center justify-center text-[#cc5500] font-bold">1</div>
+                <div>
+                  <strong class="text-white block">RECLAIMABLE (Action Required)</strong>
+                  Accounts where the Kora Node is the <strong>Authority</strong>. These are often intermediate accounts or specific ATA configurations. RentOps allows immediate, one-click closure.
+                </div>
+              </li>
+              <li class="flex gap-4">
+                <div class="w-8 h-8 rounded-full bg-blue-900/20 flex items-center justify-center text-blue-400 font-bold">2</div>
+                <div>
+                  <strong class="text-white block">SPONSORED (User Owned)</strong>
+                  Accounts funded by the node but owned by a user. RentOps identifies these to track capital exposure but prevents unilateral closure, respecting Solana's permission model.
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          <div v-else-if="activeDoc === 'Safe Reclamation'">
+            <div class="bg-[#111] border border-gray-800 p-6 mb-8">
+              <h3 class="text-white font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                <Shield01Icon size="18" class="text-green-500" /> Safety First Architecture
+              </h3>
+              <p class="text-sm text-gray-400">
+                RentOps will never accidentally burn user assets. Before constructing a reclamation transaction, the engine performs atomic checks:
+              </p>
+            </div>
+            <ul class="space-y-2 text-gray-400 list-disc pl-5 marker:text-[#cc5500]">
+              <li><strong>Zero Balance Check:</strong> Ensures the token account is completely empty. If tokens exist, the bot aborts and warns the operator.</li>
+              <li><strong>Authority Verification:</strong> Verifies the signing key matches the on-chain account owner.</li>
+              <li><strong>Whitelist Filter:</strong> Checks against the local <code>whitelist.json</code> to protect critical infrastructure.</li>
+            </ul>
+          </div>
+
+          <div v-else>
+             <p class="text-gray-400 text-lg leading-relaxed">
+               Select a topic from the sidebar to explore RentOps documentation.
+             </p>
+          </div>
+
         </div>
       </div>
     </div>
