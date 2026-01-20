@@ -1,5 +1,6 @@
 import { defineEventHandler, readBody } from 'h3'
 import { z } from 'zod'
+import { globalStats } from './stats.get'
 
 const TelegramUpdateSchema = z.object({
   update_id: z.number(),
@@ -29,31 +30,72 @@ export default defineEventHandler(async (event) => {
       const chatId = update.message.chat.id
       
       if (text === '/start') {
-        await sendTelegramMessage(chatId, "Welcome to RentOps! I'll monitor your Kora node's rent status.")
-      } else if (text.startsWith('/scan')) {
-        const node = text.split(' ')[1] || process.env.KORA_NODE_ADDRESS
+        await sendTelegramMessage(chatId, 
+`*RentOps Online*
+
+I am your Kora Operator Assistant.
+
+*Commands:*
+/scan <NODE_ADDRESS> - Scan for rent opportunities
+/status - View global system stats
+/help - Show this menu
+
+Note: This cloud bot has execution limits (60s). For continuous real-time monitoring and instant alerts without limits, please run RentOps locally.
+
+_For secure reclamation, please use the web dashboard._`)
+      } 
+      else if (text.startsWith('/scan')) {
+        const node = text.split(' ')[1]
         if (!node) {
-          await sendTelegramMessage(chatId, "Please provide a node address: /scan <ADDRESS>")
+          await sendTelegramMessage(chatId, "Please provide a node address:\n`/scan <ADDRESS>`")
           return { ok: true }
         }
-        await sendTelegramMessage(chatId, `[LOG] Scanning for node ${node}...`)
-        const { scanForNode } = useScanner()
-        const result = await scanForNode(node)
-        await sendTelegramMessage(chatId, `[SUCCESS] Scan complete! Found ${result.foundCount} sponsored accounts. Check your dashboard for details.`)
-       } else if (text === '/status') {
-         const stats = await $fetch('/api/stats')
+        await sendTelegramMessage(chatId, `Scanning node \`${node.slice(0, 8)}...\` on *devnet*...`)
         
-        const message = `📊 *RentOps Status Report*
-        
-💰 Total Locked: ${stats.totalLocked.toFixed(4)} SOL
-✅ Total Reclaimed: ${stats.totalReclaimed.toFixed(4)} SOL
-⚠️ Idle Rent: ${stats.idleRent.toFixed(4)} SOL
-active Accounts: ${stats.activeAccounts}
+        try {
+          const { scanForNode } = useScanner()
+          const result = await scanForNode(node, { network: 'devnet' })
+          
+          const reclaimable = result.foundLogs.filter(l => l.isReclaimable).length
+          const sponsored = result.foundLogs.filter(l => l.reason === 'USER_OWNED').length
+          const totalRent = (result.foundLogs.length * 0.002).toFixed(4)
 
-System: ONLINE`
+          let msg = `*Scan Complete*\n\n`
+          msg += `*Target:* \`${node}\`\n`
+          msg += `*Total Rent Detected:* ~${totalRent} SOL\n\n`
+          
+          if (reclaimable > 0) {
+             msg += `*ACTION REQUIRED:* ${reclaimable} accounts are owned by you and reclaimable immediately via Dashboard.\n`
+          }
+          if (sponsored > 0) {
+             msg += `*SPONSORED:* ${sponsored} accounts are User-Owned.\n`
+          }
+          if (reclaimable === 0 && sponsored === 0) {
+             msg += `All clear. No idle rent found.`
+          }
+
+          await sendTelegramMessage(chatId, msg)
+        } catch (err) {
+           await sendTelegramMessage(chatId, `Scan failed: ${err.message}`)
+        }
+       } 
+       else if (text === '/status') {
+        const message = `*RentOps Status Report*
+        
+*Total Locked:* ${globalStats.totalLocked.toFixed(4)} SOL
+*Total Reclaimed:* ${globalStats.totalReclaimed.toFixed(4)} SOL
+*Idle Rent Value:* ${globalStats.idleRent.toFixed(4)} SOL
+*Active Accounts:* ${globalStats.activeAccounts}
+
+System: *OPERATIONAL*`
         await sendTelegramMessage(chatId, message)
-       } else if (text.startsWith('/reclaim')) {
-         await sendTelegramMessage(chatId, "❌ Reclaim not supported via Telegram. Use the dashboard for secure private key entry.")
+       } 
+       else if (text.startsWith('/reclaim')) {
+         await sendTelegramMessage(chatId, `*Security Alert*
+
+Reclamation requires private key signing. This is disabled on Telegram for your safety.
+
+Please use the [RentOps Dashboard](https://rentops.davidnzube.xyz) or CLI.`)
        }
     }
     
@@ -66,7 +108,10 @@ System: ONLINE`
 
 async function sendTelegramMessage(chatId: number, text: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN
-  if (!token) return
+  if (!token) {
+    console.warn('TELEGRAM_BOT_TOKEN not set')
+    return
+  }
   
   const url = `https://api.telegram.org/bot${token}/sendMessage`
   await $fetch(url, {
@@ -74,6 +119,7 @@ async function sendTelegramMessage(chatId: number, text: string) {
     body: {
       chat_id: chatId,
       text: text,
+      parse_mode: 'Markdown'
     }
   })
 }
