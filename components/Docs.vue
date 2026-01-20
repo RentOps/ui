@@ -254,8 +254,6 @@ const activeDoc = ref('The Rent Problem')
           </div>
 
         </div>
-
-        </div>
       </div>
     </div>
   </div>
