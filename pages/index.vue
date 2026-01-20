@@ -5,7 +5,7 @@ const showCliModal = ref(false)
 const copied = ref(false)
 
 function copyCliCommand() {
-  navigator.clipboard.writeText('cargo install rentops-cli')
+  navigator.clipboard.writeText('curl -sL https://raw.githubusercontent.com/rentops/binaries/main/install.sh | bash')
   copied.value = true
   setTimeout(() => copied.value = false, 2000)
 }
@@ -59,9 +59,9 @@ function copyCliCommand() {
         </div>
         <div class="p-8">
           <p class="text-gray-500 mb-4 text-xs uppercase tracking-widest">Install Command</p>
-          <div class="bg-[#111] border border-gray-800 p-4 flex justify-between items-center group hover:border-[#cc5500] transition-colors cursor-pointer" @click="copyCliCommand">
-            <code class="text-[#cc5500]">$ cargo install rentops-cli</code>
-            <span class="text-xs text-gray-500 group-hover:text-[#cc5500] uppercase flex items-center gap-2">
+          <div class="bg-[#111] border border-gray-800 p-4 flex justify-between items-center group hover:border-[#cc5500] transition-colors cursor-pointer overflow-x-auto" @click="copyCliCommand">
+            <code class="text-[#cc5500] whitespace-nowrap">$ curl -sL https://raw.githubusercontent.com/rentops/binaries/main/install.sh | bash</code>
+            <span class="text-xs text-gray-500 group-hover:text-[#cc5500] uppercase flex items-center gap-2 flex-shrink-0 ml-4">
               <component :is="copied ? CheckmarkCircle02Icon : Copy01Icon" size="16" />
               {{ copied ? 'COPIED' : 'COPY' }}
             </span>
